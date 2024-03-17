@@ -4,7 +4,7 @@ pragma solidity ^0.8.21;
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Script, console2} from "forge-std/Script.sol";
 import "../lib/forge-std/src/StdJson.sol";
-import {UBDValidator}  from "../src/UBDValidator.sol";
+import {ChebuToken}  from "../src/ChebuToken.sol";
 
 
 contract DeployScript is Script {
@@ -30,32 +30,57 @@ contract DeployScript is Script {
             usdt_address = address(0);
         }
         console2.log("usdt_address: %s", usdt_address); 
-
-         // Define constructor params
-        address ubd_address;   
-        key = string.concat(".", vm.toString(block.chainid),".ubd_address");
+        
+        string memory name_token;   
+        key = string.concat(".", vm.toString(block.chainid),".name_token");
         if (vm.keyExists(params_json_file, key)) 
         {
-            ubd_address = params_json_file.readAddress(key);
+            name_token = params_json_file.readString(key);
         } else {
-            ubd_address = address(0);
+            name_token = 'Chebu Mem Coin';
         }
-        console2.log("ubd_address: %s", ubd_address); 
+        console2.log("name_token: %s", name_token); 
 
-         // Define constructor params
-        address signer_address;   
-        key = string.concat(".", vm.toString(block.chainid),".signer_address");
+        string memory symb_token;   
+        key = string.concat(".", vm.toString(block.chainid),".symb_token");
         if (vm.keyExists(params_json_file, key)) 
         {
-            signer_address = params_json_file.readAddress(key);
+            symb_token = params_json_file.readString(key);
         } else {
-            signer_address = msg.sender;
+            symb_token = 'CHEBU';
         }
-        console2.log("signer_address: %s", signer_address); 
+        console2.log("symb_token: %s", symb_token);
+        
+        address fee_beneficiary;   
+        key = string.concat(".", vm.toString(block.chainid),".fee_beneficiary");
+        if (vm.keyExists(params_json_file, key)) 
+        {
+            fee_beneficiary = params_json_file.readAddress(key);
+        } else {
+            fee_beneficiary = address(0);
+        }
+        console2.log("fee_beneficiary: %s", fee_beneficiary); 
+
+        address trade_for;   
+        key = string.concat(".", vm.toString(block.chainid),".fee_beneficiary");
+        if (vm.keyExists(params_json_file, key)) 
+        {
+            trade_for = params_json_file.readAddress(key);
+        } else {
+            trade_for = address(0);
+        }
+        console2.log("trade_for: %s", trade_for); 
 
         //////////   Deploy   //////////////
         vm.startBroadcast();
-        UBDValidator validator = new UBDValidator(signer_address, usdt_address, ubd_address);
+        ChebuToken memcoin = new ChebuToken(
+            name_token, 
+            symb_token, 
+            fee_beneficiary,
+            trade_for,
+            6
+
+        );
         vm.stopBroadcast();
         
         ///////// Pretty printing ////////////////
@@ -67,17 +92,17 @@ contract DeployScript is Script {
             string.concat(".", vm.toString(block.chainid))
         );
         
-        console2.log("\n**UBDValidator**  ");
-        console2.log("https://%s/address/%s#code\n", explorer_url, address(validator));
+        console2.log("\n**ChebuToken**  ");
+        console2.log("https://%s/address/%s#code\n", explorer_url, address(memcoin));
 
         console2.log("```python");
-        console2.log("validator = UBDValidator.at('%s')", address(validator));
+        console2.log("memcoin = ChebuToken.at('%s')", address(memcoin));
         console2.log("```");
    
         // ///////// End of pretty printing ////////////////
 
         // ///  Init ///
-        console2.log("Init transactions....");
+        // console2.log("Init transactions....");
         // vm.startBroadcast();
         // modelReg.setModelState(
         //     address(impl_00),
@@ -100,7 +125,7 @@ contract DeployScript is Script {
         // }
         
         // vm.stopBroadcast();
-        console2.log("Initialisation finished");
+        // console2.log("Initialisation finished");
 
     }
 }
