@@ -28,6 +28,7 @@ contract ChebuToken is ERC20, TradeManager {
     }
 
     function _mintFor(address _user, uint256 _amount) internal override {
+        require(totalSupply() + _amount <= MAX_TOTAL_SUPPLY, "MAX_TOTAL_SUPPLY LIMIT");
         _mint(_user, _amount);
     }
 

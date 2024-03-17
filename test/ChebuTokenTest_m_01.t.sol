@@ -19,7 +19,7 @@ contract ChebuTokenTest_m_01 is Test {
 
     receive() external payable virtual {}
     function setUp() public {
-        usdt = new MockERC20('USDT test token', 'USDT');
+        usdt = new MockERC20('USDT test token', 'USDT', 6);
         memcoin = new ChebuToken(
             'Chebu Mem Coin', 
             'CHEBU', 
