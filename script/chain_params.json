@@ -1,0 +1,47 @@
+{   
+    "1": {
+        "sub_reg": "0x937cc2f0e4E40Ebe774aFd01911e3D14B9cd21c0",
+        "ubdn_address": "0xD624E5C89466A15812c1D45Ce1533be1F16C1702",
+        "ubd_address": "0x08A0356dF4F4052accE757FaacCEc35b621bBDD2",
+        "neededERC20Amount": "100000000000000000000",
+        "usdt_address": "0xdAC17F958D2ee523a2206206994597C13D831ec7"
+    },
+
+    "5":"goerli.etherscan.io",
+    "56":{
+        "sub_reg": "0x5385e7E022031013D46654d20937DE6bE6Ea51BE"
+    },
+    "97":"testnet.bscscan.com",
+    "137": {
+        "sub_reg": "0x937cc2f0e4E40Ebe774aFd01911e3D14B9cd21c0"
+    },
+    
+    "31337": {
+        "sub_reg": "0x0000000000000000000000000000000000000011"
+    },
+
+    "42161":{
+        "sub_reg": "0xd3807CE2F215DC42ca4bfA616B16C20b0B195128"
+    },
+    "80001":{
+        "sub_reg": "0x0000000000000000000000000000000000000011"
+    },  
+    "534352": {
+        "sub_reg": "0x0000000000000000000000000000000000000011"
+    },
+
+    "11155111": {
+        "sub_reg": "0x0000000000000000000000000000000000000011",
+        "ubdn_address": "0x7ce7abb7F8794dCe67FB2dc4d8eBf2F033472730",
+        "ubd_address": "0x3E4673D787dD89C96075Bf6a2bE0DFaB75cC6Be8",
+        "neededERC20Amount": "1000000000000000000",
+        "inheriter": "0x71373aa15b6d537E70138A39709B50e32C3660Ec",
+        "silentPeriod": "100",
+        "ubdn_locker": "0xCCF7028D83D0b6eD8e68124Efe07E5FaD1C4E17F",
+        "usdt_address": "0xE3cfED0fbCDB7AaE09816718f0f52F10140Fc61F"
+    },
+
+    "168587773": {
+        "sub_reg": "0x7E3AD5abA96578f50e2737689c9B457DF8eB8403"
+    }
+}
