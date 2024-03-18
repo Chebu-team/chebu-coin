@@ -16,7 +16,7 @@ contract TradeManager {
 
     uint256 constant public START_PRICE = 1;         
     uint256 constant public PRICE_INCREASE_STEP = 1; // 1 decimal unit of stable coin
-    uint256 constant public INCREASE_FROM_ROUND = 0;
+    uint256 constant public INCREASE_FROM_ROUND = 1;
     uint256 immutable public ROUND_VOLUME = 1_000_000 * 10**_distributionTokenDecimals(); // in wei
     uint256 constant public FEE_PERCENT_POINT = 50000;
     uint256 constant public PERCENT_DENOMINATOR = 10000;
@@ -78,14 +78,43 @@ contract TradeManager {
         (uint256 outAmount, uint256 inAmountFee)= _calcMintTokensForExactStable(_inAmount);
         require(outAmount > 0, 'Cant buy zero');
         
-        // 2. Get payment
-        tradeToken.safeTransferFrom(msg.sender, address(this), _inAmount);
-        
-        // 3. Charge Fee
+        // 2. Charge Fee
         fee.total += inAmountFee;
-        // 4. Mint distribution token
+        
+        // 3. Mint distribution token
         _mintFor(msg.sender, outAmount);
+
+        // 4. Get payment
+        tradeToken.safeTransferFrom(msg.sender, address(this), _inAmount);
+
         emit Deal(msg.sender, address(tradeToken), _inAmount, outAmount);
+
+    }
+
+    function burnExactTokensForStable(uint256 _inAmount) public {
+
+        // 1. Calc distribution tokens
+        (uint256 outAmount, uint256 outAmountFee)= _calcBurnExactTokensForStable(_inAmount);
+        require(outAmount > 0, 'Cant buy zero');
+        
+        // 2. Charge Fee
+        fee.total += outAmountFee;
+        
+        // 3. Mint distribution token
+        _burnFor(msg.sender, _inAmount);
+
+        // 4. Get payment
+        tradeToken.safeTransfer(msg.sender, outAmount);
+
+        emit Deal(msg.sender, address(this), _inAmount, outAmount);
+
+    }
+
+    function claimFee(uint256 _amount) external {
+        require(msg.sender == BENEFICIARY, "Unauthorized");
+        require(_amount <= fee.total - fee.claimed);
+        fee.claimed += _amount;
+        tradeToken.safeTransfer(msg.sender, _amount);
 
     }
     
@@ -122,11 +151,41 @@ contract TradeManager {
         (inAmount, includeFee) =  _calcMintStableForExactTokens(_outAmount);
     }
 
+
+    /// @notice Returns amount of stable tokens that will be
+    /// get by user if he(she) burn given chebu coin amount
+    /// @dev _inAmount must be with given in wei (eg 1 CHEBU =1000000000000000000)
+    /// @param _inAmount CHEBU coin amount that user want to burn
+    /// @param outAmount stable coin amount that user will get
+    /// @param outAmountFee fee that will charged from outAmount
+    function calcBurnExactTokensForStable(uint256 _inAmount)
+        external
+        view
+        returns(uint256 outAmount, uint256 outAmountFee) 
+    {
+        (outAmount, outAmountFee) = _calcBurnExactTokensForStable(_inAmount);
+    }
+
+     /// @notice Returns amount of CHEBU tokens that will be
+    /// burn by user to get some  exact amount of stables
+    /// @dev _inAmount must be with given in wei (eg 1 CHEBU =1000000000000000000)
+    /// @param _outAmount stable coin amount that user want to get after burn
+    /// @param inAmount CHEBU coin amount that user will need to  burn
+    /// @param includeFee fee that will charged from _outAmount
+    function calcBurnTokensForExactStable(uint256 _outAmount)
+        external
+        view
+        returns(uint256 inAmount, uint256 includeFee)
+    {
+        (inAmount, includeFee) = _calcBurnTokensForExactStable(_outAmount);
+    }
+
+
     /// @notice Returns price  and distributing token rest
     /// for given round
     /// @dev returns tuple  (price, rest)
     /// @param _round round number
-    function priceInUnitsAndRemainByRound(uint256 _round) 
+    function priceAndRemainByRound(uint256 _round) 
         external 
         view 
         returns(uint256, uint256) 
@@ -134,6 +193,17 @@ contract TradeManager {
         return _priceInUnitsAndRemainByRound(_round);
     }
 
+    /// @notice Returns price  and minted token 
+    /// for given round
+    /// @dev returns tuple  (price, rest)
+    /// @param _round round number
+    function priceAndMintedInRound(uint256 _round) 
+        external 
+        view 
+        returns(uint256, uint256) 
+    {
+        return _priceInUnitsAndMintedInRound(_round);
+    }
 
     /// @notice Returns current round number
     function getCurrentRound() external view returns(uint256){
@@ -157,13 +227,15 @@ contract TradeManager {
             (curPrice, curRest) = _priceInUnitsAndRemainByRound(curR); 
             if (outA > curRest) {
                 inAmount += curRest 
-                    * curPrice * 10**TRADE_DECIMALS
+                    //* curPrice * 10**TRADE_DECIMALS
+                    * curPrice 
                     / (10**dstTokenDecimals);
                 outA -= curRest;
                 ++ curR;
             } else {
                 inAmount += outA 
-                    * curPrice * 10**TRADE_DECIMALS
+                    //* curPrice * 10**TRADE_DECIMALS
+                    * curPrice
                     / (10**dstTokenDecimals);
                 //return inAmount;
                 break;
@@ -194,7 +266,8 @@ contract TradeManager {
                 // calc out amount
                 inA 
                 * (10**dstTokenDecimals)
-                / (curPrice * 10**TRADE_DECIMALS)
+                // / (curPrice * 10**TRADE_DECIMALS)
+                / curPrice
                    > curRest
                 ) 
             {
@@ -202,7 +275,8 @@ contract TradeManager {
                 // in current round
                 outAmount += curRest;
                 inA -= curRest 
-                       * curPrice * 10**TRADE_DECIMALS
+                       //* curPrice * 10**TRADE_DECIMALS
+                       * curPrice
                        / (10**dstTokenDecimals);
                 ++ curR;
             } else {
@@ -210,9 +284,117 @@ contract TradeManager {
                 // in current round
                 outAmount += inA 
                   * 10**dstTokenDecimals
-                  / (curPrice * 10**TRADE_DECIMALS);
+                 // / (curPrice * 10**TRADE_DECIMALS);
+                  / (curPrice );
                 return (outAmount, inAmountFee);
             }
+        }
+    }
+
+    function _calcBurnExactTokensForStable(uint256 _inAmount)
+        internal
+        view
+        returns(uint256 outAmount, uint256 outAmountFee)
+    {
+    	uint256 inA = _inAmount;
+        uint256 curR = _currenRound();
+        uint256 curPrice; 
+        uint256 curMint;
+        uint8 dstTokenDecimals = _distributionTokenDecimals();
+        while (inA > 0) {
+            (curPrice, curMint) = _priceInUnitsAndMintedInRound(curR);
+            // Case when 
+            if (inA > curMint) {
+                outAmount += curMint 
+                    // * curPrice * 10**TRADE_DECIMALS  // check about decimals
+                    * curPrice
+                    / (10**dstTokenDecimals);
+                inA -= curMint;
+                -- curR;
+            } else {
+                outAmount += inA 
+                    // * curPrice * 10**TRADE_DECIMALS
+                    * curPrice
+                    / (10**dstTokenDecimals);
+                //return inAmount;
+                break;
+            }
+        }
+        // Fee Charge
+        outAmountFee = outAmount * FEE_PERCENT_POINT / (100 * PERCENT_DENOMINATOR);
+        outAmount -= outAmountFee; // return outAmount  fee excleded
+
+    }
+
+    function _calcBurnTokensForExactStable(uint256 _outAmount)
+        internal
+        view
+        returns(uint256 inAmount, uint256 includeFee)
+    {
+    	// Calc realy out amount with excluded fee
+        uint256 outA = _outAmount * 100 * PERCENT_DENOMINATOR 
+            / (100 * PERCENT_DENOMINATOR + FEE_PERCENT_POINT);
+        includeFee = _outAmount - outA;
+
+        uint256 curR = _currenRound();
+        uint256 curPrice; 
+        uint256 curMint;
+        uint8 dstTokenDecimals = _distributionTokenDecimals();
+        while (outA > 0) {
+            (curPrice, curMint) = _priceInUnitsAndMintedInRound(curR); 
+            if (
+                // calc out amount
+                outA 
+                * (10**dstTokenDecimals)
+                 / (curPrice * 10**TRADE_DECIMALS)
+                /// curPrice
+                   > curMint
+                ) 
+            {
+                // Case when inAmount more then price of all tokens 
+                // in current round
+                inAmount += curMint;
+                outA -= curMint 
+                       * curPrice * 10**TRADE_DECIMALS
+                       //* curPrice
+                       / (10**dstTokenDecimals);
+                ++ curR;
+            } else {
+                // Case when inAmount less or equal then price of all tokens 
+                // in current round
+                inAmount += outA 
+                  * 10**dstTokenDecimals
+                   / (curPrice * 10**TRADE_DECIMALS);
+                  // / curPrice;
+                return (inAmount, includeFee);
+            }
+        }
+        
+    }
+
+    function _priceInUnitsAndMintedInRound(uint256 _round)
+        internal
+        view
+        returns(uint256 price, uint256 minted)
+    {
+         price = _priceForRound(_round);
+
+         // in finished rounds rest always zero
+        if (_round < _currenRound()){
+            minted = ROUND_VOLUME;
+        
+        // in current round need calc 
+        } else if (_round == _currenRound()){
+            if (_round == 1){
+                // first round
+                minted = _distributedAmount(); 
+            } else {
+                minted = _distributedAmount() % ROUND_VOLUME; 
+            } 
+        
+        // in future rounds rest always ROUND_VOLUME
+        } else {
+            minted = 0;
         }
     }
 
@@ -222,11 +404,7 @@ contract TradeManager {
         virtual 
         returns(uint256 price, uint256 rest) 
     {
-        if (_round < INCREASE_FROM_ROUND){
-            price = START_PRICE;
-        } else {
-            price = START_PRICE + PRICE_INCREASE_STEP * (_round - INCREASE_FROM_ROUND + 1); 
-        }
+        price = _priceForRound(_round);
         
         // in finished rounds rest always zero
         if (_round < _currenRound()){
@@ -244,6 +422,14 @@ contract TradeManager {
         // in future rounds rest always ROUND_VOLUME
         } else {
             rest = ROUND_VOLUME;
+        }
+    }
+
+    function _priceForRound(uint256 _round) internal pure returns (uint256 price) {
+    	if (_round < INCREASE_FROM_ROUND){
+            price = START_PRICE;
+        } else {
+            price = PRICE_INCREASE_STEP * (_round - INCREASE_FROM_ROUND + 1); 
         }
     }
 

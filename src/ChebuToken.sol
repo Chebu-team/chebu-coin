@@ -8,7 +8,7 @@ import "./TradeManager.sol";
 
 contract ChebuToken is ERC20, TradeManager {
 
-    uint256 immutable public MAX_TOTAL_SUPPLY =1_000_000_000_000;
+    uint256 immutable public MAX_TOTAL_SUPPLY =1_000_000_000_000e18;
    
     //address immutable public minter; // sale contract
 
