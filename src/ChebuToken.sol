@@ -21,8 +21,6 @@ contract ChebuToken is ERC20, TradeManager {
         ERC20(_name, _symbol)
         TradeManager(_feeBeneficiary, _tradeFor)
     { 
-        
-
 
     }
 

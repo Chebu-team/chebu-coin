@@ -7,7 +7,7 @@ import "../lib/forge-std/src/StdJson.sol";
 import {ChebuToken}  from "../src/ChebuToken.sol";
 
 
-contract DeployScript is Script {
+contract DeployScriptCHEBU is Script {
     using stdJson for string;
 
     function run() public {
@@ -62,7 +62,7 @@ contract DeployScript is Script {
         console2.log("fee_beneficiary: %s", fee_beneficiary); 
 
         address trade_for;   
-        key = string.concat(".", vm.toString(block.chainid),".fee_beneficiary");
+        key = string.concat(".", vm.toString(block.chainid),".trade_for");
         if (vm.keyExists(params_json_file, key)) 
         {
             trade_for = params_json_file.readAddress(key);
@@ -77,7 +77,7 @@ contract DeployScript is Script {
             name_token, 
             symb_token, 
             fee_beneficiary,
-            trade_for
+            usdt_address
         );
         vm.stopBroadcast();
         
@@ -92,6 +92,8 @@ contract DeployScript is Script {
         
         console2.log("\n**ChebuToken**  ");
         console2.log("https://%s/address/%s#code\n", explorer_url, address(memcoin));
+        console2.log("\n**TradeFor - USDT**  ");
+        console2.log("https://%s/address/%s#code\n", explorer_url, address(usdt_address));
 
         console2.log("```python");
         console2.log("memcoin = ChebuToken.at('%s')", address(memcoin));

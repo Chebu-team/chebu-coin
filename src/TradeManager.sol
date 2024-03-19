@@ -51,7 +51,8 @@ contract TradeManager {
         address _tradeFor       // e.g. USDT address
     ) 
     {
-    	BENEFICIARY = _feeBeneficiary;
+    	require(_feeBeneficiary != address(0), "Please set beneficiary");
+        BENEFICIARY = _feeBeneficiary;
     	TRADE_DECIMALS = 18;
     	if (_tradeFor != address(0)) {
     		tradeToken = IERC20(_tradeFor);

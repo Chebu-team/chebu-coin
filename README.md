@@ -46,15 +46,23 @@ $ anvil
 ```
 
 ### Deploy
-
+#### Sepolia
 ```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
+$ forge script script/DeployCHEBU.s.sol:DeployScriptCHEBU --rpc-url sepolia  --account ttwo --sender 0xDDA2F2E159d2Ce413Bd0e1dF5988Ee7A803432E3 --broadcast --verify
 ```
 
-### Cast
+### Cast in Sepolia
 
 ```shell
-$ cast <subcommand>
+$ # BalanceOf stable for trade
+$ cast call 0xE3cfED0fbCDB7AaE09816718f0f52F10140Fc61F "balanceOf(address)" 0xDDA2F2E159d2Ce413Bd0e1dF5988Ee7A803432E3 --rpc-url sepolia
+
+$ cast send 0xE3cfED0fbCDB7AaE09816718f0f52F10140Fc61F "approve(address,uint256)" 0xf35b8249Ef91317f06E67c887B38483089c18724 1000000000000 --rpc-url sepolia --account ttwo 
+
+$ cast send 0xf35b8249Ef91317f06E67c887B38483089c18724 "mintTokensForExactStable(uint256)" 10000000 --rpc-url sepolia --account ttwo 
+
+burnExactTokensForStable
+$ cast send 0xf35b8249Ef91317f06E67c887B38483089c18724 "burnExactTokensForStable(uint256)" 1000000000000000000 --rpc-url sepolia --account ttwo 
 ```
 
 ### Help
