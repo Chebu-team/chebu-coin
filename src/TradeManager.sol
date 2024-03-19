@@ -329,12 +329,12 @@ contract TradeManager {
     function _calcBurnTokensForExactStable(uint256 _outAmount)
         internal
         view
-        returns(uint256 inAmount, uint256 includeFee)
+        returns(uint256 inAmount, uint256 payedFee)
     {
-    	// Calc realy out amount with excluded fee
+    	// Calc realy out amount before pay fee
         uint256 outA = _outAmount * 100 * PERCENT_DENOMINATOR 
-            / (100 * PERCENT_DENOMINATOR + FEE_PERCENT_POINT);
-        includeFee = _outAmount - outA;
+            / (100 * PERCENT_DENOMINATOR - FEE_PERCENT_POINT);
+        payedFee = outA  - _outAmount;
 
         uint256 curR = _currenRound();
         uint256 curPrice; 
@@ -346,8 +346,8 @@ contract TradeManager {
                 // calc out amount
                 outA 
                 * (10**dstTokenDecimals)
-                 / (curPrice * 10**TRADE_DECIMALS)
-                /// curPrice
+                 // / (curPrice * 10**TRADE_DECIMALS)
+                / curPrice
                    > curMint
                 ) 
             {
@@ -355,23 +355,21 @@ contract TradeManager {
                 // in current round
                 inAmount += curMint;
                 outA -= curMint 
-                       * curPrice * 10**TRADE_DECIMALS
-                       //* curPrice
+                       //* curPrice * 10**TRADE_DECIMALS
+                       * curPrice
                        / (10**dstTokenDecimals);
-                ++ curR;
+                -- curR;
             } else {
                 // Case when inAmount less or equal then price of all tokens 
                 // in current round
                 inAmount += outA 
                   * 10**dstTokenDecimals
-                   / (curPrice * 10**TRADE_DECIMALS);
-                  // / curPrice;
-                return (inAmount, includeFee);
+                   /// (curPrice * 10**TRADE_DECIMALS);
+                   / curPrice;
+                return (inAmount, payedFee);
             }
         }
-        
     }
-
     function _priceInUnitsAndMintedInRound(uint256 _round)
         internal
         view
