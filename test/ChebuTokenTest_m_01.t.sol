@@ -23,8 +23,7 @@ contract ChebuTokenTest_m_01 is Test {
             'Chebu Mem Coin', 
             'CHEBU', 
             address(this),
-            address(usdt),
-            usdt.decimals()
+            address(usdt)
         );
         //usdt.transfer(address(validator), sendUSDTAmount);
     }
@@ -37,7 +36,7 @@ contract ChebuTokenTest_m_01 is Test {
     }
     
     function test_MintPrice() public view {
-        (uint256 price, uint256 minted) = memcoin.priceAndRemainByRound(1);
+        (uint256 price, ) = memcoin.priceAndRemainByRound(1);
         assertEq(price, 1);
         (uint256 outAmount, uint256 inAmountFee) = memcoin.calcMintTokensForExactStable(inAmountStable_1);
         assertEq(outAmount,15e23);
@@ -66,6 +65,8 @@ contract ChebuTokenTest_m_01 is Test {
         assertEq(outAmount, 1_900000);
         assertEq(outAmountFee, 100000);
         (uint256 inAmount, uint256 includeFee) = memcoin.calcBurnTokensForExactStable(1_900000);
+        assertEq(inAmount, 1_500_000e18);
+        assertEq(includeFee, 100000);
     }
 
     function test_Burn() public  {

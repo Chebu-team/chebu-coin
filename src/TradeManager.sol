@@ -5,6 +5,12 @@ pragma solidity 0.8.23;
 
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
+interface IERC20Decimals{
+    /**
+     * @dev Returns the decimals places of the token.
+     */
+    function decimals() external view returns (uint8);
+}
 
 contract TradeManager {
 	 using SafeERC20 for IERC20;
@@ -14,10 +20,15 @@ contract TradeManager {
     	uint256 claimed;
     }
 
+    /////////////////////////////////////////////////
+    ///  Main Constants, check before Deployment   //
+    /////////////////////////////////////////////////
     uint256 constant public START_PRICE = 1;         
     uint256 constant public PRICE_INCREASE_STEP = 1; // 1 decimal unit of stable coin
     uint256 constant public INCREASE_FROM_ROUND = 1;
     uint256 immutable public ROUND_VOLUME = 1_000_000 * 10**_distributionTokenDecimals(); // in wei
+    /////////////////////////////////////////////////
+
     uint256 constant public FEE_PERCENT_POINT = 50000;
     uint256 constant public PERCENT_DENOMINATOR = 10000;
     
@@ -37,16 +48,14 @@ contract TradeManager {
 
     constructor (
     	address _feeBeneficiary,
-        address _tradeFor,       // e.g. USDT address
-        uint8   _tradeDecimals     // e.g. 6 for USDT
+        address _tradeFor       // e.g. USDT address
     ) 
     {
     	BENEFICIARY = _feeBeneficiary;
     	TRADE_DECIMALS = 18;
     	if (_tradeFor != address(0)) {
-    		require(_tradeDecimals != 0, 'ERC20 decimals cant be zero');
     		tradeToken = IERC20(_tradeFor);
-    		TRADE_DECIMALS = _tradeDecimals;
+    		TRADE_DECIMALS = IERC20Decimals(_tradeFor).decimals();
     	}
         
     }

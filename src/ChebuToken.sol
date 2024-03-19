@@ -16,11 +16,10 @@ contract ChebuToken is ERC20, TradeManager {
         string memory _name, 
         string memory _symbol,
         address _feeBeneficiary,
-        address _tradeFor,
-        uint8 _tradeDecimals
+        address _tradeFor
     )
         ERC20(_name, _symbol)
-        TradeManager(_feeBeneficiary, _tradeFor, _tradeDecimals)
+        TradeManager(_feeBeneficiary, _tradeFor)
     { 
         
 

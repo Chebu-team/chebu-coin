@@ -77,9 +77,7 @@ contract DeployScript is Script {
             name_token, 
             symb_token, 
             fee_beneficiary,
-            trade_for,
-            6
-
+            trade_for
         );
         vm.stopBroadcast();
         
