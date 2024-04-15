@@ -38,4 +38,9 @@ fs_permissions = [
   polygon = "https://polygon-mainnet.infura.io/v3/${WEB3_INFURA_PROJECT_ID}"
   sepolia = "https://sepolia.infura.io/v3/${WEB3_INFURA_PROJECT_ID}"
 
+[fuzz]
+  runs = 100
+  max_test_rejects = 20
+  dictionary_weight = 80
+
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
