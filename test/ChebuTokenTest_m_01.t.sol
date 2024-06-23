@@ -78,4 +78,6 @@ contract ChebuTokenTest_m_01 is Test {
         assertEq(memcoin.totalSupply(), 0);
         assertEq(usdt.balanceOf(address(memcoin)), t);
     }
+
+    
 }

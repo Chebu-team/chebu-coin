@@ -27,6 +27,7 @@ contract TradeManager {
     uint256 constant public PRICE_INCREASE_STEP = 1; // 1 decimal unit of stable coin
     uint256 constant public INCREASE_FROM_ROUND = 1;
     uint256 immutable public ROUND_VOLUME = 1_000_000 * 10**_distributionTokenDecimals(); // in wei
+    uint256 immutable public CREATED;
     /////////////////////////////////////////////////
 
     uint256 constant public FEE_PERCENT_POINT = 50000;
@@ -58,6 +59,7 @@ contract TradeManager {
     		tradeToken = IERC20(_tradeFor);
     		TRADE_DECIMALS = IERC20Decimals(_tradeFor).decimals();
     	}
+        CREATED = block.timestamp;
         
     }
 
